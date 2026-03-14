@@ -165,7 +165,10 @@ export const useStore = create<AppState>()(
         const room = Object.values(get().rooms).find(r => r.code === code && r.status !== 'finished');
         if (!room) return null;
 
-        const existingParticipant = Object.values(room.participants).find(p => p.name === name);
+        const quizExists = get().quizzes.some(q => q.id === room.quizId);
+        if (!quizExists) return null;
+
+        const existingParticipant = Object.values(room.participants || {}).find(p => p.name === name);
         if (existingParticipant) {
           if (existingParticipant.isFinished) return null;
           return existingParticipant.id;
