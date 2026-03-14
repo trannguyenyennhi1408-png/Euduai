@@ -6,8 +6,8 @@ import Swal from 'sweetalert2';
 
 export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave: () => void }) {
   const { currentUser, rooms, quizzes, startRoom, nextQuestion, endRoom, submitAnswer, usePowerUp, finishHomework } = useStore();
-  const room = rooms[roomId];
-  const quiz = quizzes.find(q => q.id === room?.quizId);
+  const room = (rooms || {})[roomId];
+  const quiz = (quizzes || []).find(q => q.id === room?.quizId);
   const isTeacher = currentUser?.role === 'teacher';
   
   const [timeLeft, setTimeLeft] = useState(30);
@@ -19,18 +19,18 @@ export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave:
   const participant = Object.values(room?.participants || {}).find(p => p.name === currentUser?.name);
   
   const [localQuestionIndex, setLocalQuestionIndex] = useState(() => {
-    if (room?.gameMode === 'homework' && participant && quiz) {
-      const answeredCount = Object.keys(participant.answers).length;
+    if (room?.gameMode === 'homework' && participant && quiz?.questions?.length) {
+      const answeredCount = Object.keys(participant.answers || {}).length;
       return Math.min(answeredCount, quiz.questions.length - 1);
     }
     return 0;
   });
   
   const activeQuestionIndex = room?.gameMode === 'homework' && !isTeacher ? localQuestionIndex : (room?.currentQuestionIndex || 0);
-  const currentQuestion = quiz?.questions[activeQuestionIndex];
+  const currentQuestion = quiz?.questions?.[activeQuestionIndex];
   
-  const hasAnswered = participant?.answers[currentQuestion?.id || ''] !== undefined;
-  const isCorrect = hasAnswered && participant?.answers[currentQuestion?.id || ''] === currentQuestion?.correctAnswer;
+  const hasAnswered = !!(currentQuestion?.id && participant?.answers?.[currentQuestion.id] !== undefined);
+  const isCorrect = hasAnswered && participant?.answers?.[currentQuestion!.id] === currentQuestion?.correctAnswer;
 
   useEffect(() => {
     if (room?.status === 'playing' && !hasAnswered && timeLeft > 0 && room?.gameMode !== 'homework') {
@@ -99,7 +99,7 @@ export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave:
     Swal.fire('Đã dùng x2 Điểm', 'Câu trả lời đúng tiếp theo sẽ được nhân đôi điểm!', 'success');
   };
 
-  const sortedLeaderboard = Object.values(room.participants).sort((a, b) => b.score - a.score);
+  const sortedLeaderboard = Object.values(room.participants || {}).sort((a, b) => b.score - a.score);
 
   if (room.status === 'waiting') {
     return (
@@ -115,11 +115,11 @@ export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave:
 
           <div className="flex items-center justify-center space-x-2 text-slate-600 mb-8">
             <Users className="w-5 h-5" />
-            <span className="font-medium">{Object.keys(room.participants).length} người đã tham gia</span>
+            <span className="font-medium">{Object.keys(room.participants || {}).length} người đã tham gia</span>
           </div>
 
           <div className="flex flex-wrap justify-center gap-3 mb-8">
-            {Object.values(room.participants).map(p => (
+            {Object.values(room.participants || {}).map(p => (
               <span key={p.id} className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full font-medium text-sm animate-in fade-in slide-in-from-bottom-2">
                 {p.name}
               </span>
@@ -173,12 +173,12 @@ export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave:
             <div className="p-8">
               <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center">
                 <Users className="w-6 h-6 mr-2 text-emerald-500" />
-                Danh sách học sinh ({Object.keys(room.participants).length})
+                Danh sách học sinh ({Object.keys(room.participants || {}).length})
               </h2>
               
               <div className="space-y-4">
                 {sortedLeaderboard.map((p, index) => {
-                  const progress = Math.round((Object.keys(p.answers).length / quiz.questions.length) * 100);
+                  const progress = Math.round((Object.keys(p.answers || {}).length / (quiz?.questions?.length || 1)) * 100);
                   return (
                     <div key={p.id} className="flex items-center p-4 rounded-2xl bg-slate-50 border border-slate-100 transition-all hover:shadow-md">
                       <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold mr-4">
