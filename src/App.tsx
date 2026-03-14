@@ -18,7 +18,7 @@ export default function App() {
       if (r.teacherId === currentUser?.id) {
         return r.gameMode !== 'homework';
       }
-      return Object.values(r.participants).some(p => p.name === currentUser?.name && !p.isFinished);
+      return Object.values(r.participants || {}).some(p => p.name === currentUser?.name && !p.isFinished);
     }
   )?.id;
 
