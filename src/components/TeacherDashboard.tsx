@@ -86,7 +86,7 @@ export default function TeacherDashboard({ onOpenSettings, onEnterRoom }: { onOp
     reader.readAsText(file);
   };
 
-  const myQuizzes = quizzes.filter(q => q.teacherId === currentUser?.id);
+  const myQuizzes = (quizzes || []).filter(q => q.teacherId === currentUser?.id);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -130,14 +130,14 @@ export default function TeacherDashboard({ onOpenSettings, onEnterRoom }: { onOp
         </div>
 
         {/* Active Rooms Section */}
-        {Object.values(useStore.getState().rooms).filter(r => r.teacherId === currentUser?.id && r.status !== 'finished').length > 0 && (
+        {Object.values(useStore.getState().rooms || {}).filter(r => r.teacherId === currentUser?.id && r.status !== 'finished').length > 0 && (
           <div className="mb-12">
             <h2 className="text-2xl font-bold text-slate-800 mb-6">Phòng đang hoạt động</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.values(useStore.getState().rooms)
+              {Object.values(useStore.getState().rooms || {})
                 .filter(r => r.teacherId === currentUser?.id && r.status !== 'finished')
                 .map(room => {
-                  const quiz = quizzes.find(q => q.id === room.quizId);
+                  const quiz = (quizzes || []).find(q => q.id === room.quizId);
                   return (
                     <div key={room.id} className="bg-white rounded-2xl shadow-sm border border-emerald-200 p-6 hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start mb-4">
