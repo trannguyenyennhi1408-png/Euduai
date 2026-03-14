@@ -51,7 +51,25 @@ export default function RoomView({ roomId, onLeave }: { roomId: string; onLeave:
     setShowAITutor(false);
   }, [activeQuestionIndex]);
 
-  if (!room || !quiz) return null;
+  if (!room || !quiz) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8 text-center max-w-sm w-full">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Lỗi phòng thi</h2>
+          <p className="text-slate-500 mb-6">Phòng thi hoặc bộ câu hỏi không còn tồn tại.</p>
+          <button
+            onClick={onLeave}
+            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+          >
+            Quay lại trang chủ
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const handleStart = () => startRoom(roomId);
   const handleNext = () => nextQuestion(roomId);
